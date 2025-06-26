@@ -20,7 +20,7 @@ export default function AuthPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!authToken) {
+        if (authToken) {
             navigate("/profile");
         }
     }, [authToken, navigate]);
@@ -39,7 +39,6 @@ export default function AuthPage() {
         try {
             const res = await axios.post(`${url}/login`, { username, password });
             if (res.data && res.data.auth === true && res.data.token) {
-                navigate("/profile")
                 setAuthToken(res.data.token); // Save token to localStorage.
                 console.log("Login was successful, token saved");
             }

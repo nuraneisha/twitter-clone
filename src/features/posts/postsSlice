@@ -1,0 +1,52 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
+const BASE_URL = "https://342a0a97-00b6-4ff9-9328-ee91ee8b96a4-00-2aa1gf71runrt.sisko.replit.dev";
+
+//createAsyncThunk-handle async operation
+export const fetchPostsByUser = createAsyncThunk(
+    //name of the asyncThunk
+    "posts/fetchByUser",
+
+    async (userId) => {
+        const response = await fetch(`${BASE_URL}/posts/user/${userId}`);
+        return response.json()
+    }
+
+);
+export const savePost = createAsyncThunk(
+    "posts/savePost",
+    async (postContent) => {
+        const token = localStorage.getItem("authToken");
+        const decode = jwtDecode(token);
+        const userId = decode.id;
+
+        const data = {
+            title: "Post Title",
+            content: postContent,
+            user_id: userId,
+        };
+        const response = await axios.post(`${BASE_URL}/posts`, data);
+        return response.data;
+    }
+)
+const postsSlice = createSlice({
+    name: "posts",
+    initialState: { posts: [], loading: true },
+    reducers: {},
+    extraReducers: (builder) => {
+        //pending-triggered while running
+        //rejected-triggered when something is wrong
+        //fullfilled-triggered when its done
+        builder.addCase(fetchPostsByUser.fulfilled, (state, action) => {
+            (state.posts = action.payload),
+                (state.loading = false);
+        }),
+            builder.addCase(savePost.fulfilled, (state, action) => {
+                state.posts = [action.payload, ...state.posts]
+            })
+    },
+});
+
+export default postsSlice.reducer;
